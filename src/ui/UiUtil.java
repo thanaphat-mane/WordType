@@ -24,7 +24,7 @@ public class UiUtil {
     public static ImageIcon loadIcon(String fileName) {
         java.net.URL url = UiUtil.class.getResource(IMG_PATH + fileName);
         if (url == null) {
-            System.err.println("หาไฟล์รูปไม่เจอครับลูกพี่!: " + IMG_PATH + fileName);
+            System.err.println(IMG_PATH + fileName);
             return null; // ถ้าไม่เจอ ให้คืนค่าว่างไป (โปรแกรมจะไม่แครช)
         }
         return new ImageIcon(url);
