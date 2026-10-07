@@ -1,11 +1,6 @@
-import java.awt.Font;
-import java.awt.GraphicsEnvironment;
-import java.io.InputStream;
-
-import javax.swing.SwingUtilities;
-
-import com.mycompany.wordtype.*;
-
+import java.awt.*;
+import java.io.*;
+import javax.swing.*;
 import service.AuthResult;
 import service.AuthService;
 
@@ -55,7 +50,7 @@ public class Main {
         seedTestUsers();
         SwingUtilities.invokeLater(() -> {
             com.formdev.flatlaf.FlatLightLaf.setup(); // ตั้ง Look and Feel ครั้งเดียว ก่อนสร้างหน้าใด ๆ
-            new Mainframe().setVisible(true);
+            new ui.MainFrame().setVisible(true);
         });
     }
 }

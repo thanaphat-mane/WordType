@@ -6,7 +6,7 @@ import util.CSVUtil;
 
 public class UserRepository {
 
-    private static final String FILE_PATH = "./src/main/java/data/users.csv";
+    private static final String FILE_PATH = "./src/data/users.csv";
 
     public boolean existsByUsername(String username){
         return FindByUsername(username) != null;
