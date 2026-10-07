@@ -3,6 +3,11 @@ package ui;
 import java.awt.*;
 import javax.swing.*;
 
+import ui.pages.Home;
+import ui.pages.Leaderboard;
+import ui.pages.Login;
+import ui.pages.Register;
+
 public class MainFrame extends JFrame {
 
     private CardLayout cardLayout;
@@ -23,11 +28,13 @@ public class MainFrame extends JFrame {
         Home homePanel = new Home();
         Login loginPanel = new Login();
         Register registerPanel = new Register();
+        Leaderboard LeaderboardPanel = new Leaderboard();
 
         // 3. ยัดหน้าต่างๆ ลงไปในกล่องเก็บไพ่ พร้อมตั้ง "ป้ายชื่อ"                                                             
         cards.add(homePanel, "HOME");                                                                                   
         cards.add(loginPanel, "LOGIN");                                                                                 
         cards.add(registerPanel, "REGISTER");
+        cards.add(LeaderboardPanel, "LEADERBOARD"); 
 
         // 4. เอากล่องเก็บไพ่ไปแปะในหน้าต่างหลัก                                                                              
         setContentPane(cards);                                                                                          
@@ -45,5 +52,8 @@ public class MainFrame extends JFrame {
     }
     public void showHome() {
         cardLayout.show(cards, "HOME");
+    }
+    public void showLeaderboard() {
+        cardLayout.show(cards, "LEADERBOARD");
     }
 }

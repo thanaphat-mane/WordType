@@ -1,5 +1,7 @@
-package ui;
+package ui.components;
 import javax.swing.JToggleButton;
+
+import ui.UiUtil;
 
 import java.awt.*;
 

@@ -1,6 +1,9 @@
-package ui;
+package ui.pages;
 
 import javax.swing.*;
+
+import ui.UiUtil;
+import ui.components.HeaderBar;
 
 public class Result extends JPanel{
     public Result() {

@@ -1,6 +1,9 @@
-package ui;
+package ui.pages;
 import java.awt.*;
 import javax.swing.*;
+
+import ui.UiUtil;
+import ui.components.HeaderBar;
 
 public class Login extends JPanel{
     public Login() {

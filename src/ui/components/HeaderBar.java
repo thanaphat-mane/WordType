@@ -1,6 +1,10 @@
-package ui;
+package ui.components;
 
 import javax.swing.*;
+
+import ui.MainFrame;
+import ui.UiUtil;
+
 import java.awt.*;
 import java.awt.event.*;;
 
@@ -62,6 +66,27 @@ public class HeaderBar extends JPanel {
             }
             public  void mouseExited(MouseEvent evt) {
                 btnUser.setForeground(Color.decode("#8E9094"));
+            }
+        });
+
+        // กดเข้าหน้า Leaderboard
+        btnLeader.addActionListener(e -> {
+            MainFrame main = (MainFrame) SwingUtilities.getWindowAncestor(this);
+            if (main != null) main.showLeaderboard();
+        });
+
+        // กดเข้าหน้า Login
+        btnUser.addActionListener(e -> {
+            MainFrame main = (MainFrame) SwingUtilities.getWindowAncestor(this);
+            if (main != null) main.showLogin();
+        });
+
+        // กด logo กลับหน้า home
+        lblLogo.setCursor(new Cursor(Cursor.HAND_CURSOR)); // ทำให้เมาส์เป็นรูปมือเวลาชี้โลโก้
+        lblLogo.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) { 
+                MainFrame main = (MainFrame) SwingUtilities.getWindowAncestor(HeaderBar.this);
+                if (main != null ) main.showHome(); 
             }
         });
     }
