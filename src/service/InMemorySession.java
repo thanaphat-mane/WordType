@@ -1,26 +1,43 @@
 package service;
 
 import model.User;
-
 /**
- * คลาสสำหรับจัดการเซสชัน (Session) ในหน่วยความจำของโปรแกรม (In-Memory)
- * ทำหน้าที่เสมือนป้ายห้อยคอหรือที่นั่งชั่วคราว เพื่อบอกว่าใครกำลังใช้งานโปรแกรมอยู่ ณ ขณะนี้
- * โดยข้อมูลจะถูกเก็บไว้ในตัวแปรธรรมดา ซึ่งหมายความว่าหากปิดโปรแกรม ข้อมูลการล็อกอินนี้ก็จะหายไปทันที
- * คลาสนี้ Implement มาจาก SessionManager เพื่อให้โครงสร้างของระบบมีความยืดหยุ่น (ใช้หลัก Dependency Inversion)
+ * คลาสนี้ทำหน้าที่เป็น "โกดังเก็บข้อมูลส่วนกลาง" (Singleton Pattern) 
+ * ใช้สำหรับจดจำว่า "ใครกำลังล็อกอินอยู่ในระบบตอนนี้" 
+ * เพื่อให้ทุกๆ หน้าต่าง (เช่น Home, Login, HeaderBar) สามารถดึงข้อมูลชุดเดียวกันไปใช้งานได้
  */
 public class InMemorySession implements SessionManager{
 
-    /**
-     * ตัวแปร currentuUser ใช้เก็บอ็อบเจกต์ User ของผู้ใช้งานที่กำลังล็อกอินอยู่
-     * ถ้าไม่มีใครล็อกอิน ตัวแปรนี้จะมีค่าเป็น null
-     */
+    // ตัวเเปร instance จพถูกสร้างขึ้นมาเเค่ตัวเดียวในระบบ 
+    private static InMemorySession instance;
+
+    // เก็บข้อมูลของผู้ใช้ที่กำลังใช้งานระบบอยู่ ณ ปัจจุบัน
     private User currentuUser;
 
     /**
-     * เมธอดสำหรับทำหน้าที่ "ล็อกอิน" โดยจดจำผู้ใช้เข้าสู่ระบบ
-     *
-     * @param user อ็อบเจกต์ของผู้ใช้งานที่ล็อกอินสำเร็จและต้องการบันทึกสถานะ
-     * @throws IllegalArgumentException จะมีการโยน Exception นี้หากส่งค่า null เข้ามาป้องกันไม่ให้สถานะผิดเพี้ยน
+     * ช่อง Constructor ให้เป็น private
+     * เพื่อนป้องกันไม่ให้มีการใช้คำส่ัง new InMemorySession() จาก class อื่น
+     * บังคับให้ทุกคนต้องเรียกข้อมูลผ่าน getInstance() เท่านั้น
+     */
+    private  InMemorySession() {}
+
+    /**
+     * เมธอดสำหรับเรียกใช้งาน Session จากทุกที่ในระบบ
+     * หากยังไม่เคยมีการสร้างโกดังเก็บข้อมูล จำทำการสร้างขึ้นมาใหม่เพียง 1 ครั้ง
+     * 
+     * @return instance ตัวเเปรส่วนกลางของ Session
+     */
+    public static InMemorySession getInstance() {                                                                                              
+        if (instance == null) {                                                                                                                
+            instance = new InMemorySession();                                                                                                  
+        }                                                                                                                                      
+        return instance;                                                                                                                       
+    }
+
+    /**    (non-Javadoc)
+     * บันทึกข้อมูลผู้ใช้เมื้อ login Success
+     * 
+     * @param user ข้อมูลผู้ใช้ที่ตรวจสอบรหัสผ่านถูกต่้องเเล้ว
      */
     @Override
     public void login(User user) {
@@ -34,9 +51,8 @@ public class InMemorySession implements SessionManager{
         this.currentuUser = user;
     }
 
-    /**
-     * เมธอดสำหรับทำหน้าที่ "ออกจากระบบ" (Logout)
-     * การทำงานคือเพียงแค่ล้างค่าข้อมูลผู้ใช้ปัจจุบันทิ้งไป
+    /**    (non-Javadoc)
+     * ลบข้อมูลผู้ใช้ปัจจุบันออกเมื่อทำการ logout
      */
     @Override
     public void logout() {
@@ -46,10 +62,10 @@ public class InMemorySession implements SessionManager{
         this.currentuUser = null;
     }
 
-    /**
-     * เมธอดสำหรับสอบถามว่าใครคือคนที่กำลังล็อกอินอยู่ในปัจจุบัน
-     *
-     * @return คืนค่าอ็อบเจกต์ User ที่กำลังใช้งานอยู่ หรือคืนค่า null หากปัจจุบันไม่มีคนล็อกอิน
+    /**    (non-Javadoc)
+     * ดึงข้อมูลของผู้ใช้ที่ login อยู่ปัจจุบัน
+     * 
+     * @return  ข้อมูล User หรือ null หากยังไม่มีใคร login
      */
     @Override
     public User getCurrentUser() {
@@ -57,10 +73,10 @@ public class InMemorySession implements SessionManager{
         return currentuUser;
     }
 
-    /**
-     * เมธอดสำหรับตรวจสอบอย่างรวดเร็วว่าตอนนี้ "มีคนล็อกอินอยู่หรือไม่"
-     *
-     * @return คืนค่า true ถ้ามีคนล็อกอินอยู่ (ตัวแปรไม่เป็น null), คืนค่า false ถ้ายังไม่มีใครล็อกอิน
+    /**    (non-Javadoc)
+     * ตรวจสอบสถานะว่าผู้ใช้ login อยู่หรือไม่
+     * 
+     * @return true ถ้ามีคน login อยู่, false ถ้าไม่มีใคร login
      */
     @Override
     public boolean isLoggedIn() {

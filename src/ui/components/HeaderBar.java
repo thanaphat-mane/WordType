@@ -28,9 +28,16 @@ public class HeaderBar extends JPanel {
 
     /**
      * คอนสตรักเตอร์สำหรับสร้างและกำหนดค่าการแสดงผลของแถบ Header 
-     * รวมไปถึงการจัดวางพิกัด การจัดรูปแบบ (Styling) และการเพิ่ม Event Listeners สำหรับการโต้ตอบ
      */
     public HeaderBar() {
+        initComponents();
+        setupListeners();
+    }
+
+    /**
+     * เมธอดสำหรับสร้างและจัดวางองค์ประกอบต่างๆ บน HeaderBar (UI Components)
+     */
+    private void initComponents() {
         // --- 1. การตั้งค่าโครงสร้างหลักของ HeaderBar ---
         // ปิดการใช้ Layout Manager อัตโนมัติ (เช่น BorderLayout, FlowLayout) 
         // เพื่อใช้การวางตำแหน่งแบบระบุพิกัด X, Y อิสระ (Absolute Layout)
@@ -109,20 +116,30 @@ public class HeaderBar extends JPanel {
         
         // เพิ่มปุ่ม User เข้าสู่ HeaderBar
         add(btnUser);
+    }
 
-        // --- 5. การเพิ่ม Event Listeners (การจัดการเหตุการณ์ต่างๆ) ---
-
-        // (5.1) เอฟเฟกต์เปลี่ยนสีข้อความของปุ่ม User เมื่อนำเมาส์เข้า/ออก
+    /**
+     * เมธอดสำหรับผูกเหตุการณ์ต่างๆ (Events) เข้ากับองค์ประกอบ UI
+     */
+    private void setupListeners() {
+        // ลูกเล่นเวลาเอาเมาส์ไปชี้ที่ปุ่ม User 
         btnUser.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent evt) {
-                // เมื่อเมาส์เข้ามาในเขตพื้นที่ของปุ่ม (Hover) ให้เปลี่ยนสีข้อความเป็นสีดำ
-                btnUser.setForeground(Color.black);
+            public  void mouseEntered(MouseEvent evt) {                                                                                             
+                btnUser.setForeground(Color.black);                                                                                                                                                                                                      
+                btnUser.setFont(new Font("Space Grotesk Medium", Font.PLAIN, 16));                                                                                                                                                                         
+                // ถ้าล็อกอินอยู่ ให้โชว์คำว่า Logout                                                                            
+                if (service.InMemorySession.getInstance().isLoggedIn()) {                                                                      
+                    btnUser.setText("Logout");                                                                                                 
+                }         
             }
-            @Override
-            public void mouseExited(MouseEvent evt) {
-                // เมื่อเมาส์ออกจากพื้นที่ปุ่ม ให้กลับไปเป็นสีเทาตามเดิม
-                btnUser.setForeground(Color.decode("#8E9094"));
+            public void mouseExited(MouseEvent evt) {                                                                                                                                                                     
+                btnUser.setForeground(Color.decode("#8E9094"));                                                                                                                                                                                          
+                btnUser.setFont(new Font("Space Grotesk Medium", Font.PLAIN, 16));                                                                                                                                                                                            
+                // 3. ถ้าล็อกอินอยู่ ให้ดึงชื่อกลับมาโชว์เหมือนเดิม
+                if (service.InMemorySession.getInstance().isLoggedIn()) {
+                    String username = service.InMemorySession.getInstance().getCurrentUser().getUsername();
+                    btnUser.setText(username);
+                }
             }
         });
 
@@ -134,12 +151,30 @@ public class HeaderBar extends JPanel {
             if (main != null) main.showLeaderboard();
         });
 
-        // (5.3) การทำงานเมื่อคลิกปุ่ม User
+        // กดปุ่มมุมขวาบน (ถ้ายังไม่ล็อกอิน = พาไปหน้า Login / ถ้าล็อกอินแล้ว = ล็อกเอาท์) 
         btnUser.addActionListener(e -> {
             // ค้นหาหน้าต่างหลักเช่นเดิม
             MainFrame main = (MainFrame) SwingUtilities.getWindowAncestor(this);
-            // สั่งเปลี่ยนหน้าจอไปยังหน้า Login
-            if (main != null) main.showLogin();
+            if (main != null) {
+
+                // เช็คว่าตอนนี้มีคนล็อกอินอยู่หรือเปล่า?  
+                if (service.InMemorySession.getInstance().isLoggedIn()) {
+
+                    // กรณีที่ล็อกอินอยู่ (ต้องการล็อกเอาท์)
+                    // เตะออกจากโกดังส่วนกลาง (เคลียร์ Session) 
+                    service.InMemorySession.getInstance().logout();
+
+                    // เปลี่ยนตัวหนังสือบนปุ่มกลับเป็นคำว่า "Login"                                                                                    
+                    btnUser.setText("Login"); 
+                    
+                    // บังคับเด้งกลับไปหน้า Home ทันที 
+                    main.showHome();
+                } else {
+                    // กรณีที่ยังไม่มีใครล็อกอิน                                                                                              
+                    // พาไปหน้า Login ตามปกติ                                                                                                    
+                    main.showLogin();
+                }
+            }
         });
 
         // (5.4) การทำงานเมื่อคลิกที่โลโก้
@@ -150,6 +185,37 @@ public class HeaderBar extends JPanel {
                 MainFrame main = (MainFrame) SwingUtilities.getWindowAncestor(HeaderBar.this);
                 // เมื่อคลิกที่โลโก้ จะทำหน้าที่พาผู้เล่นกลับไปยังหน้าหลัก (Home) เสมอ
                 if (main != null ) main.showHome(); 
+            }
+        });
+    
+        /**
+         * เพิ่ม Event Listener เพื่อดักจับพฤติกรรม "เมื่อแถบ HeaderBar ถูกแสดงผล"     
+         * (เช่น ตอนที่ระบบสลับจากหน้า Login กลับมาโชว์หน้า Home)
+         * ระบบจะทำการเช็คสถานะล็อกอิน และอัปเดตชื่อบนปุ่มมุมขวาบนให้เป็น Username ทันที   
+         */
+        this.addHierarchyListener(new HierarchyListener() {
+            @Override 
+            public void hierarchyChanged(HierarchyEvent e) {
+                // ตรวจสอบว่าหน้าจอมีการเปลี่ยนสถานะเป็น "กำลังแสดงผลบนจอ" (isShowing) หรือไม่ 
+                if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0 && isShowing()) {
+
+                    // เรียกดูสถานะล็อกอินจาก Session ส่วนกลาง 
+                    boolean hasUserLoggedIn = service.InMemorySession.getInstance().isLoggedIn();
+
+                    if(hasUserLoggedIn) {
+                        // หากมีคนล็อกอินอยู่: ให้ดึงชื่อ (Username) มาตั้งเป็นข้อความบนปุ่ม 
+                        String username = service.InMemorySession.getInstance().getCurrentUser().getUsername();
+                        btnUser.setText(username);
+
+                        btnUser.setFont(new Font("Space Grotesk Medium", Font.PLAIN, 16)); 
+                        btnUser.setForeground(Color.decode("#8E9094"));  
+                    } else {
+                        // หากยังไม่มีคนล็อกอิน: ให้แสดงคำว่า "Login" ตามปกติ 
+                        btnUser.setText("Login");
+                        btnUser.setFont(new Font("Space Grotesk Medium", Font.PLAIN, 16));
+                        btnUser.setForeground(Color.decode("#8E9094"));
+                    }
+                }
             }
         });
     }
