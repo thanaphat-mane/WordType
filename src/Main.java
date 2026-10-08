@@ -4,9 +4,16 @@ import javax.swing.*;
 import service.AuthResult;
 import service.AuthService;
 
+/**
+ * คลาสหลัก (Main) สำหรับจุดเริ่มต้น (Entry Point) ของแอปพลิเคชัน
+ * <p>
+ * หน้าที่หลัก: โหลดทรัพยากรเริ่มต้น (เช่น ฟอนต์), ตั้งค่าผู้ใช้จำลอง (Seed data), 
+ * กำหนดธีมของหน้าต่างโปรแกรม, และสั่งให้หน้าจอหลัก (MainFrame) ปรากฏขึ้นมาทำงาน
+ */
 public class Main {
 
-    // ไฟล์ฟอนต์ที่วางไว้ใน src/main/resources/fonts/
+    // รายชื่อไฟล์ฟอนต์ทั้งหมดที่เราเตรียมไว้ในโฟลเดอร์ resources/fonts/
+    // ที่ต้องโหลดเอง เพราะเราไม่อยากบังคับให้ผู้ใช้ต้องติดตั้งฟอนต์ลงในเครื่องก่อนใช้งาน
     private static final String[] FONT_FILES = {
         "RobotoMono-Regular.ttf",
         "RobotoMono-Medium.ttf",
@@ -14,42 +21,93 @@ public class Main {
         "SpaceGrotesk-Medium.ttf"
     };
 
-    /** ลงทะเบียนฟอนต์จากในโปรเจกต์ ให้ new Font("ชื่อฟอนต์", ...) หาเจอ โดยไม่ต้องติดตั้งฟอนต์ในเครื่อง */
+    /** 
+     * เมธอดสำหรับโหลดและลงทะเบียนฟอนต์เข้าสู่ระบบ
+     * เพื่อให้สามารถเรียกใช้ new Font("ชื่อฟอนต์", ...) ได้เหมือนกับว่าติดตั้งฟอนต์ในระบบแล้ว
+     */
     private static void loadFonts() {
+        // 1. ดึง GraphicsEnvironment ซึ่งเป็นตัวจัดการหน้าจอและกราฟิกของระบบปัจจุบัน
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        
+        // 2. วนลูปอ่านรายชื่อไฟล์ฟอนต์ที่กำหนดไว้
         for (String file : FONT_FILES) {
+            // ใช้ try-with-resources ดึงไฟล์ฟอนต์มาเป็น InputStream 
+            // วิธีนี้รองรับการดึงไฟล์จากใน .jar และปิดสตรีมให้อัตโนมัติเมื่อเสร็จสิ้น
             try (InputStream in = Main.class.getResourceAsStream("/fonts/" + file)) {
+                
+                // ตรวจสอบความปลอดภัย ถ้าหาไฟล์ไม่เจอ
                 if (in == null) {
-                    System.err.println("Font file not found: /fonts/" + file);
-                    continue;
+                    System.err.println("ไม่พบไฟล์ฟอนต์: /fonts/" + file);
+                    continue; // ข้ามไปโหลดไฟล์ฟอนต์ถัดไป
                 }
+                
+                // 3. สร้างอ็อบเจ็กต์ Font จาก InputStream โดยระบุรูปแบบเป็น TrueType Font
                 Font font = Font.createFont(Font.TRUETYPE_FONT, in);
+                
+                // 4. สั่งให้ระบบ (GraphicsEnvironment) จดจำฟอนต์นี้เอาไว้
                 ge.registerFont(font);
-                System.out.println("Loaded font: " + font.getFontName() + " (family: " + font.getFamily() + ")");
+                
+                // พิมพ์บอกสถานะการโหลดว่าสำเร็จแล้ว (ช่วยในการตรวจสอบบั๊ก)
+                System.out.println("โหลดฟอนต์สำเร็จ: " + font.getFontName() + " (ตระกูล: " + font.getFamily() + ")");
             } catch (Exception e) {
+                // หากไฟล์ฟอนต์เสียหาย หรืออ่านไม่ได้ จะจับ Exception พิมพ์บอก และไปทำฟอนต์ตัวต่อไปไม่ให้โปรแกรมแครช
                 e.printStackTrace();
             }
         }
     }
 
-        private static void seedTestUsers() {
+    /**
+     * เมธอดสำหรับสร้างบัญชีผู้ใช้จำลอง (Seed data)
+     * <p>
+     * เหตุผล: เพื่อความสะดวกในการพัฒนาระบบ ไม่ต้องมานั่งสมัครสมาชิกใหม่ทุกครั้งที่ล้างข้อมูล 
+     * มีประโยชน์มากเวลาทดสอบระบบล็อกอิน
+     */
+    private static void seedTestUsers() {
+        // 1. เตรียมข้อมูลผู้ใช้จำลอง ในรูปแบบอาร์เรย์ 2 มิติ {username, password}
         String[][] accounts = {
             {"KuyKranuiTan", "1234"},
             {"user1", "1234"},
             {"user2", "1234"}
         };
+        
+        // 2. เรียกใช้งานคลาสบริการ AuthService ที่มีหน้าที่จัดการผู้ใช้
         AuthService auth = new AuthService();
+        
+        // 3. วนลูปส่งข้อมูลไปลงทะเบียน
         for (String[] acc : accounts) {
+            // พยายามลงทะเบียน หากชื่อผู้ใช้ซ้ำ (จากรอบที่แล้ว) บริการจะแจ้งกลับมาเอง
             AuthResult r = auth.register(acc[0], acc[1]);
-            System.out.println("[seed] " + acc[0] + ": " + (r.isSuccess() ? "created" : r.getMessage()));
+            
+            // แสดงสถานะว่าสร้างบัญชีสำเร็จ หรือมีเหตุผลใด (เช่น บัญชีมีอยู่แล้ว)
+            System.out.println("[เตรียมข้อมูลจำลอง] " + acc[0] + ": " + (r.isSuccess() ? "สร้างบัญชีสำเร็จ" : r.getMessage()));
         }
     }
 
+    /**
+     * เมธอดจุดเริ่มต้นการทำงานของโปรแกรม (Entry point)
+     * เมื่อรันโปรแกรม Java จะมองหาเมธอดนี้เป็นที่แรก
+     *
+     * @param args อาร์กิวเมนต์ที่ส่งมาจาก command line (ปัจจุบันไม่ได้ใช้)
+     */
     public static void main(String[] args) {
-        loadFonts(); // ต้องเรียกก่อนสร้างหน้า login
+        // 1. โหลดฟอนต์ทั้งหมดให้เรียบร้อย "ก่อน" ที่จะสร้างหน้าต่างใดๆ 
+        // ถ้าไปโหลดทีหลัง ตัวหนังสือบนหน้าจออาจจะแสดงเป็นฟอนต์มาตรฐานแทน
+        loadFonts();
+        
+        // 2. สร้างผู้ใช้จำลองลงในระบบ
         seedTestUsers();
+        
+        // 3. เริ่มต้นสร้างหน้าต่างผู้ใช้ (GUI)
+        // ใช้ SwingUtilities.invokeLater เพื่อให้การสร้างหน้าต่างไปทำงานบน "Event Dispatch Thread" (EDT)
+        // ซึ่งเป็นกฎเหล็กของระบบสวิง (Java Swing) เพื่อป้องกันปัญหาหน้าต่างค้าง หรือส่วนประกอบหน้าจอวาดไม่ทัน
         SwingUtilities.invokeLater(() -> {
-            com.formdev.flatlaf.FlatLightLaf.setup(); // ตั้ง Look and Feel ครั้งเดียว ก่อนสร้างหน้าใด ๆ
+            
+            // 4. ติดตั้ง "ธีม" ให้กับแอปพลิเคชัน 
+            // ที่นี่ใช้ FlatLaf (Flat Light Look and Feel) ซึ่งเป็นไลบรารีเสริม 
+            // ช่วยให้ UI ของโปรแกรมดูทันสมัย สวยงาม และขอบมน เหมือนแอปพลิเคชันในปัจจุบัน
+            com.formdev.flatlaf.FlatLightLaf.setup();
+            
+            // 5. สร้างอินสแตนซ์ของหน้าจอหลัก (MainFrame) และสั่งให้ปรากฏตัว (setVisible(true))
             new ui.MainFrame().setVisible(true);
         });
     }
