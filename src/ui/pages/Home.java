@@ -460,7 +460,7 @@ public class Home extends JPanel {
         jLabel5.setHorizontalAlignment(SwingConstants.CENTER);
         jLabel5.setText("<html><font color=\"#00675B\">[ ESC ]</font> <font color=\"#999999\">- restart</font></html>");
         jPanel1.add(jLabel5);
-        jLabel5.setBounds(150, 644, 900, 20);
+        jLabel5.setBounds(150, 500, 900, 20);
 
         add(jPanel1);
         jPanel1.setBounds(0, 0, 1200, 700);

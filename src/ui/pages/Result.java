@@ -125,17 +125,17 @@ public class Result extends JPanel {
         });
         add(btnRepeat);
 
-        JLabel lblShortcut = new JLabel("<html><font color='#006664'>[ TAB ]</font> <font color='#999999'>- restart</font></html>");
+        JLabel lblShortcut = new JLabel("<html><font color='#006664'>[ SPACE ]</font> <font color='#999999'>- restart</font></html>");
         lblShortcut.setFont(new Font("Menlo", Font.BOLD, 14));
         lblShortcut.setBounds(490, 610, 200, 18);
         lblShortcut.setHorizontalAlignment(SwingConstants.CENTER);
         add(lblShortcut);
         
-        // ดักคีย์บอร์ดเฉพาะตอนแสดงหน้านี้ (TAB หรือ ESC เพื่อเริ่มใหม่)
+        // ดักคีย์บอร์ดเฉพาะตอนแสดงหน้านี้ (SPACE หรือ ESC เพื่อเริ่มใหม่)
         java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(e -> {
             if (!isShowing()) return false;
             if (e.getID() == java.awt.event.KeyEvent.KEY_PRESSED) {
-                if (e.getKeyCode() == java.awt.event.KeyEvent.VK_ESCAPE || e.getKeyCode() == java.awt.event.KeyEvent.VK_TAB) {
+                if (e.getKeyCode() == java.awt.event.KeyEvent.VK_ESCAPE || e.getKeyCode() == java.awt.event.KeyEvent.VK_SPACE) {
                     if(onNextClick != null) onNextClick.run();
                     return true;
                 }
