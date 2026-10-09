@@ -62,26 +62,26 @@ public class Main {
      * เหตุผล: เพื่อความสะดวกในการพัฒนาระบบ ไม่ต้องมานั่งสมัครสมาชิกใหม่ทุกครั้งที่ล้างข้อมูล 
      * มีประโยชน์มากเวลาทดสอบระบบล็อกอิน
      */
-    private static void seedTestUsers() {
-        // 1. เตรียมข้อมูลผู้ใช้จำลอง ในรูปแบบอาร์เรย์ 2 มิติ {username, password}
-        String[][] accounts = {
-            {"KuyKranuiTan", "1234"},
-            {"user1", "1234"},
-            {"user2", "1234"}
-        };
+    // private static void seedTestUsers() {
+    //     // 1. เตรียมข้อมูลผู้ใช้จำลอง ในรูปแบบอาร์เรย์ 2 มิติ {username, password}
+    //     String[][] accounts = {
+    //         {"test1", "1234"},
+    //         {"user1", "1234"},
+    //         {"user2", "1234"}
+    //     };
         
-        // 2. เรียกใช้งานคลาสบริการ AuthService ที่มีหน้าที่จัดการผู้ใช้
-        AuthService auth = new AuthService();
+    //     // 2. เรียกใช้งานคลาสบริการ AuthService ที่มีหน้าที่จัดการผู้ใช้
+    //     AuthService auth = new AuthService();
         
-        // 3. วนลูปส่งข้อมูลไปลงทะเบียน
-        for (String[] acc : accounts) {
-            // พยายามลงทะเบียน หากชื่อผู้ใช้ซ้ำ (จากรอบที่แล้ว) บริการจะแจ้งกลับมาเอง
-            AuthResult r = auth.register(acc[0], acc[1]);
+    //     // 3. วนลูปส่งข้อมูลไปลงทะเบียน
+    //     for (String[] acc : accounts) {
+    //         // พยายามลงทะเบียน หากชื่อผู้ใช้ซ้ำ (จากรอบที่แล้ว) บริการจะแจ้งกลับมาเอง
+    //         AuthResult r = auth.register(acc[0], acc[1]);
             
-            // แสดงสถานะว่าสร้างบัญชีสำเร็จ หรือมีเหตุผลใด (เช่น บัญชีมีอยู่แล้ว)
-            System.out.println("[เตรียมข้อมูลจำลอง] " + acc[0] + ": " + (r.isSuccess() ? "สร้างบัญชีสำเร็จ" : r.getMessage()));
-        }
-    }
+    //         // แสดงสถานะว่าสร้างบัญชีสำเร็จ หรือมีเหตุผลใด (เช่น บัญชีมีอยู่แล้ว)
+    //         System.out.println("[เตรียมข้อมูลจำลอง] " + acc[0] + ": " + (r.isSuccess() ? "สร้างบัญชีสำเร็จ" : r.getMessage()));
+    //     }
+    // }
 
     /**
      * เมธอดจุดเริ่มต้นการทำงานของโปรแกรม (Entry point)
@@ -100,7 +100,7 @@ public class Main {
         loadFonts();
 
         // 3. สร้างผู้ใช้จำลองลงในระบบ
-        seedTestUsers();
+        //seedTestUsers();
 
         // 4. เริ่มต้นสร้างหน้าต่างผู้ใช้ (GUI)
         // ใช้ SwingUtilities.invokeLater เพื่อให้การสร้างหน้าต่างไปทำงานบน "Event Dispatch Thread" (EDT)
