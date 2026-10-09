@@ -89,25 +89,23 @@ public class Main {
      *
      * @param args อาร์กิวเมนต์ที่ส่งมาจาก command line (ปัจจุบันไม่ได้ใช้)
      */
-    public static void main(String[] args) {
-        // 1. โหลดฟอนต์ทั้งหมดให้เรียบร้อย "ก่อน" ที่จะสร้างหน้าต่างใดๆ 
-        // ถ้าไปโหลดทีหลัง ตัวหนังสือบนหน้าจออาจจะแสดงเป็นฟอนต์มาตรฐานแทน
+   public static void main(String[] args) {
+        // 1. วาง FlatLaf และตั้งค่าสำหรับหน้าจอ Mac ไว้บนสุด! (ชิงตัดหน้าก่อนที่ Java จะโหลด UI ตัวอื่น)
+        System.setProperty("apple.laf.useScreenMenuBar", "true");
+        System.setProperty("apple.awt.application.name", "WordType");
+        System.setProperty("apple.awt.application.appearance", "system");
+        com.formdev.flatlaf.FlatLightLaf.setup();
+
+        // 2. โหลดฟอนต์ทั้งหมดให้เรียบร้อย "ก่อน" ที่จะสร้างหน้าต่างใดๆ 
         loadFonts();
-        
-        // 2. สร้างผู้ใช้จำลองลงในระบบ
+
+        // 3. สร้างผู้ใช้จำลองลงในระบบ
         seedTestUsers();
-        
-        // 3. เริ่มต้นสร้างหน้าต่างผู้ใช้ (GUI)
+
+        // 4. เริ่มต้นสร้างหน้าต่างผู้ใช้ (GUI)
         // ใช้ SwingUtilities.invokeLater เพื่อให้การสร้างหน้าต่างไปทำงานบน "Event Dispatch Thread" (EDT)
-        // ซึ่งเป็นกฎเหล็กของระบบสวิง (Java Swing) เพื่อป้องกันปัญหาหน้าต่างค้าง หรือส่วนประกอบหน้าจอวาดไม่ทัน
         SwingUtilities.invokeLater(() -> {
-            
-            // 4. ติดตั้ง "ธีม" ให้กับแอปพลิเคชัน 
-            // ที่นี่ใช้ FlatLaf (Flat Light Look and Feel) ซึ่งเป็นไลบรารีเสริม 
-            // ช่วยให้ UI ของโปรแกรมดูทันสมัย สวยงาม และขอบมน เหมือนแอปพลิเคชันในปัจจุบัน
-            com.formdev.flatlaf.FlatLightLaf.setup();
-            
-            // 5. สร้างอินสแตนซ์ของหน้าจอหลัก (MainFrame) และสั่งให้ปรากฏตัว (setVisible(true))
+            // สร้างอินสแตนซ์ของหน้าจอหลัก (MainFrame) และสั่งให้ปรากฏตัว (setVisible(true))
             new ui.MainFrame().setVisible(true);
         });
     }
