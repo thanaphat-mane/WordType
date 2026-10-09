@@ -3,10 +3,15 @@ package ui;
 import java.awt.*;
 import javax.swing.*;
 
+import model.Score;
+import model.User;
+import service.InMemorySession;
+import service.ScoreService;
 import ui.pages.Home;
 import ui.pages.Leaderboard;
 import ui.pages.Login;
 import ui.pages.Register;
+import ui.pages.Result;
 
 /**
  * คลาส MainFrame ทำหน้าที่เป็น "หน้าต่างหลัก" (Window) ของโปรแกรม 
@@ -22,6 +27,13 @@ public class MainFrame extends JFrame {
     
     // "กล่องเก็บไพ่" (JPanel) ที่จะเป็นคอนเทนเนอร์หลักคอยบรรจุหน้าจอทั้งหมดเอาไว้
     private JPanel cards;
+    
+    // หน้าจอหลักและหน้าแสดงผลลัพธ์
+    private Home homePanel;
+    private Result resultPanel;
+    
+    // Service สำหรับจัดการคะแนน
+    private ScoreService scoreService = new ScoreService();
     
     /**
      * คอนสตรักเตอร์ (Constructor) จะถูกเรียกใช้เมื่อสร้างอ็อบเจ็กต์ MainFrame
@@ -53,25 +65,55 @@ public class MainFrame extends JFrame {
         
         // -- สร้างแต่ละหน้าจอ (Instantiating Panels) --
         // สร้างหน้าต่างๆ เตรียมไว้เป็นอ็อบเจ็กต์ (แต่จะยังไม่เห็นบนจอ จนกว่าจะสั่งโชว์)
-        Home homePanel = new Home();
+        homePanel = new Home();
         Login loginPanel = new Login();
         Register registerPanel = new Register();
+        resultPanel = new Result();
         Leaderboard leaderboardPanel = new Leaderboard(); // แก้ชื่อตัวแปรให้เป็นตัวพิมพ์เล็กนำหน้าตามหลัก Java Naming Convention
 
         // -- ยัดหน้าจอต่างๆ ลงในกล่อง (cards) --
-        // ตอนใส่หน้าจอลงไป ต้องแปะ "ป้ายชื่อ" (String Identifier) เอาไว้ด้วย
-        // เพื่อที่ตอนสั่งเปลี่ยนหน้า เราจะได้เรียกชื่อป้ายนั้นถูก
         cards.add(homePanel, "HOME");                                                                                   
         cards.add(loginPanel, "LOGIN");                                                                                 
         cards.add(registerPanel, "REGISTER");
-        cards.add(leaderboardPanel, "LEADERBOARD"); 
+        cards.add(leaderboardPanel, "LEADERBOARD");
+        cards.add(resultPanel, "RESULT");
+         
+        // -- เชื่อมหน้าจอเข้าด้วยกันผ่าน Event Callback --
+        
+        // เมื่อพิมพ์เสร็จที่หน้า Home ให้สลับไปหน้า Result พร้อมโยนคะแนนไปให้
+        homePanel.setOnFinished(score -> {
+            // 1. ตรวจสอบว่าผู้ใช้ล็อกอินอยู่หรือไม่
+            User currentUser = InMemorySession.getInstance().getCurrentUser();
+            
+            if (currentUser != null) {
+                // 2. ถ้าล็อกอินอยู่ ให้เพิ่มชื่อผู้ใช้ลงในคะแนน (ค่าเริ่มต้นตอนพิมพ์จะยังไม่มีชื่อ)
+                Score finalScore = score.withUsername(currentUser.getUsername());
+                // 3. บันทึกลงไฟล์ scores.csv ผ่าน ScoreService
+                scoreService.save(finalScore);
+                // 4. สลับหน้าจอและส่งคะแนนไปแสดง
+                showResult(finalScore);
+            } else {
+                // ถ้ายังไม่ได้ล็อกอิน ให้แสดงคะแนนเฉยๆ โดยไม่บันทึกลงไฟล์
+                showResult(score);
+            }
+        });
+
+        // เมื่อกดปุ่มลูกศร (Next) ที่หน้า Result ให้สุ่มคำใหม่แล้วกลับไปหน้า Home
+        resultPanel.setOnNextClick(() -> {
+            homePanel.restart();
+            showHome();
+        });
+
+        // เมื่อกดปุ่มทำซ้ำ (Repeat) ที่หน้า Result ให้ใช้คำเดิมแล้วกลับไปหน้า Home
+        resultPanel.setOnRepeatClick(() -> {
+            homePanel.repeat();
+            showHome();
+        });
 
         // -- นำกล่องที่บรรจุทุกหน้าจอ ไปแปะลงบนหน้าต่างหลัก --
         setContentPane(cards);                                                                                          
                                                                                                                             
         // -- สั่งให้หน้าจอแรกที่แสดงขึ้นมาตอนเปิดโปรแกรมคือหน้าใด --
-        // ถึงแม้ว่าระบบจริงควรเริ่มที่หน้า LOGIN แต่สำหรับการทดสอบและพัฒนาระบบ (Development Phase)
-        // เราตั้งให้แสดงหน้า HOME ขึ้นมาก่อน เพื่อให้ทดสอบพิมพ์ได้เลยโดยไม่ต้องมานั่งล็อกอินทุกรอบ
         showHome();
     }
 
@@ -99,6 +141,8 @@ public class MainFrame extends JFrame {
      */
     public void showHome() {
         cardLayout.show(cards, "HOME");
+        // เมื่อเปลี่ยนมาหน้า Home ควรเรียกโฟกัส เพื่อให้ Keyboard ทราบว่าต้องพิมพ์ลงหน้านี้
+        homePanel.requestFocusInWindow();
     }
 
     /**
@@ -107,4 +151,13 @@ public class MainFrame extends JFrame {
     public void showLeaderboard() {
         cardLayout.show(cards, "LEADERBOARD");
     }
+
+    /**
+     * นำคะแนนไปตั้งค่าที่หน้า Result และสลับหน้าจอไปที่นั่น
+     */
+    public void showResult(Score score) {                                                                                                                               
+        resultPanel.setScore(score); 
+        cardLayout.show(cards, "RESULT");
+        resultPanel.requestFocusInWindow(); // เพื่อให้รับคีย์บอร์ด ESC/TAB ได้
+    } 
 }

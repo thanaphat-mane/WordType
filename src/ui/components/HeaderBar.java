@@ -219,4 +219,16 @@ public class HeaderBar extends JPanel {
             }
         });
     }
+
+    /** ซ่อน/แสดงปุ่มใน HeaderBar ยกเว้นโลโก้ (สำหรับ Focus Mode) */
+    public void setChromeVisible(boolean visible, java.awt.Color bgColor) {
+        btnUser.setVisible(visible);
+        btnLeader.setVisible(visible);
+        if (visible) {
+            lblLogo.setForeground(UiUtil.TEAL);
+        } else {
+            // จางลงตอนพิมพ์
+            lblLogo.setForeground(new java.awt.Color(142, 144, 148));
+        }
+    }
 }
