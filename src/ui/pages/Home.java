@@ -466,6 +466,33 @@ public class Home extends JPanel {
         jPanel1.setBounds(0, 0, 1200, 700);
     }
 
+    public void setInitialMode(String newMode, int newAmount) {
+        this.mode = newMode;
+        this.amount = newAmount;
+        
+        // อัปเดตสถานะปุ่ม (กดให้เนียนๆ)
+        if (model.Score.getModeTime().equals(newMode)) {
+            btnTimeMode.setSelected(true);
+            btnTime15.setText("15");
+            btnTime30.setText("30");
+            btnTime60.setText("60");
+            btnTime120.setText("120");
+        } else {
+            btnWordsMode.setSelected(true);
+            btnTime15.setText("10");
+            btnTime30.setText("25");
+            btnTime60.setText("50");
+            btnTime120.setText("100");
+        }
+
+        if (newAmount == 15 || newAmount == 10) btnTime15.setSelected(true);
+        else if (newAmount == 30 || newAmount == 25) btnTime30.setSelected(true);
+        else if (newAmount == 60 || newAmount == 50) btnTime60.setSelected(true);
+        else if (newAmount == 120 || newAmount == 100) btnTime120.setSelected(true);
+
+        restart();
+    }
+
     // =========================================================
     // ส่วนของการจัดการ Event การคลิกปุ่มหมวดหมู่/ค่าต่างๆ
     // =========================================================

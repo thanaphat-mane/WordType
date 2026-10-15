@@ -12,6 +12,7 @@ import ui.pages.Leaderboard;
 import ui.pages.Login;
 import ui.pages.Register;
 import ui.pages.Result;
+import ui.pages.SelectMode;
 
 
 
@@ -38,6 +39,7 @@ public class MainFrame extends JFrame {
     private Leaderboard leaderboardPanel;
     private Score pendingLeaderboardScore;
     private String currentCard = "LOGIN";
+    private SelectMode selectModePanel;
     
     // Service สำหรับจัดการคะแนน
     private ScoreService scoreService = new ScoreService();
@@ -77,6 +79,7 @@ public class MainFrame extends JFrame {
         Register registerPanel = new Register();
         resultPanel = new Result();
         leaderboardPanel = new Leaderboard(scoreService);
+        selectModePanel = new SelectMode();
 
 
         // -- ยัดหน้าจอต่างๆ ลงในกล่อง (cards) --
@@ -137,6 +140,14 @@ public class MainFrame extends JFrame {
     private void switchTo(String name) {
     currentCard = name;
     cardLayout.show(cards, name);
+    }
+
+    public Home getHomePanel() {
+        return homePanel;
+    }
+
+    public void showSelectMode() {
+        cardLayout.show(cards, "SELECT_MODE");
     }
 
     public boolean isLoggedIn(){
