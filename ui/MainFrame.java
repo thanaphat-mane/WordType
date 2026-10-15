@@ -1,0 +1,189 @@
+﻿package ui;
+
+import java.awt.*;
+import javax.swing.*;
+
+import model.Score;
+import model.User;
+import service.InMemorySession;
+import service.ScoreService;
+import ui.pages.Home;
+import ui.pages.Leaderboard;
+import ui.pages.Login;
+import ui.pages.Register;
+import ui.pages.Result;
+
+
+
+
+
+/**
+ * คลาส MainFrame ทำหน้าที่เป็น "หน้าต่างหลัก" (Window) ของโปรแกรม 
+ * <p>
+ * หลักการทำงาน: เปรียบเสมือนกรอบรูป (JFrame) หนึ่งกรอบที่เปิดขึ้นมาตอนรันแอปพลิเคชัน 
+ * จากนั้นใช้เทคนิค CardLayout ในการสลับเปลี่ยน "หน้าจอ (Panel)" ต่างๆ ภายในกรอบเดิม
+ * ทำให้ดูเหมือนเราเปลี่ยนหน้าไปมาได้โดยที่หน้าต่างโปรแกรมไม่กะพริบหรือเปิดหน้าต่างใหม่
+ */
+public class MainFrame extends JFrame {
+
+    // ตัวจัดการเลย์เอาต์แบบ "สำรับไพ่" (CardLayout) ที่ยอมให้แสดงผลทีละหนึ่งหน้าเท่านั้น
+    private CardLayout cardLayout;
+    
+    // "กล่องเก็บไพ่" (JPanel) ที่จะเป็นคอนเทนเนอร์หลักคอยบรรจุหน้าจอทั้งหมดเอาไว้
+    private JPanel cards;
+    
+    // หน้าจอหลักและหน้าแสดงผลลัพธ์
+    private Home homePanel;
+    private Result resultPanel;
+    private Leaderboard leaderboardPanel;
+    private Score pendingLeaderboardScore;
+    private String currentCard = "LOGIN";
+    
+    // Service สำหรับจัดการคะแนน
+    private ScoreService scoreService = new ScoreService();
+    
+    /**
+     * คอนสตรักเตอร์ (Constructor) จะถูกเรียกใช้เมื่อสร้างอ็อบเจ็กต์ MainFrame
+     * ทำหน้าที่ตั้งค่าหน้าต่าง และโหลดหน้าจอทั้งหมดมารอไว้ในหน่วยความจำ
+     */
+    public MainFrame() {
+        // 1. กำหนดชื่อบนหัวหน้าต่าง (Title Bar) ของโปรแกรม
+        setTitle("wordtype");
+        
+        // 2. ตั้งค่าให้โปรแกรมปิดการทำงานสมบูรณ์ (หยุดรัน) เมื่อผู้ใช้กดปุ่มกากบาท (X) มุมขวาบน
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        
+        // 3. ล็อกขนาดหน้าต่าง ไม่ให้ผู้ใช้ย่อ/ขยายได้ เพื่อป้องกันไม่ให้เลย์เอาต์ที่เราจัดพิกัดไว้พัง
+        setResizable(false);
+        
+        // 4. กำหนดขนาดของหน้าต่างกว้าง 1200 พิกเซล สูง 700 พิกเซล
+        setSize(1200, 700);
+        
+        // 5. สั่งให้หน้าต่างนี้ไปแสดงอยู่ "กึ่งกลางหน้าจอ" เสมอ โดยไม่สนว่าจอภาพจะใหญ่แค่ไหน
+        setLocationRelativeTo(null); 
+        
+        // -- เริ่มต้นระบบ CardLayout --
+        
+        // สร้างตัวจัดการเลย์เอาต์ (CardLayout) 
+        cardLayout = new CardLayout();
+        
+        // สร้างพาเนลหลัก (cards) แล้วกำหนดให้ใช้เลย์เอาต์ที่เพิ่งสร้าง
+        cards = new JPanel(cardLayout);
+        
+        // -- สร้างแต่ละหน้าจอ (Instantiating Panels) --
+        // สร้างหน้าต่างๆ เตรียมไว้เป็นอ็อบเจ็กต์ (แต่จะยังไม่เห็นบนจอ จนกว่าจะสั่งโชว์)
+        homePanel = new Home();
+        Login loginPanel = new Login();
+        Register registerPanel = new Register();
+        resultPanel = new Result();
+        leaderboardPanel = new Leaderboard(scoreService);
+
+
+        // -- ยัดหน้าจอต่างๆ ลงในกล่อง (cards) --
+        cards.add(homePanel, "HOME");                                                                                   
+        cards.add(loginPanel, "LOGIN");                                                                                 
+        cards.add(registerPanel, "REGISTER");
+        cards.add(leaderboardPanel, "LEADERBOARD");
+        cards.add(resultPanel, "RESULT");
+
+
+         
+        // -- เชื่อมหน้าจอเข้าด้วยกันผ่าน Event Callback --
+        
+        // เมื่อพิมพ์เสร็จที่หน้า Home ให้สลับไปหน้า Result พร้อมโยนคะแนนไปให้
+        homePanel.setOnFinished(score -> {
+            // 1. ตรวจสอบว่าผู้ใช้ล็อกอินอยู่หรือไม่
+            User currentUser = InMemorySession.getInstance().getCurrentUser();
+            
+            if (currentUser != null) {
+                // 2. ถ้าล็อกอินอยู่ ให้เพิ่มชื่อผู้ใช้ลงในคะแนน (ค่าเริ่มต้นตอนพิมพ์จะยังไม่มีชื่อ)
+                Score finalScore = score.withUsername(currentUser.getUsername());
+                // 3. บันทึกลงไฟล์ scores.csv ผ่าน ScoreService
+                scoreService.save(finalScore);
+                // 4. สลับหน้าจอและส่งคะแนนไปแสดง
+                showResult(finalScore);
+            } else {
+                // ถ้ายังไม่ได้ล็อกอิน ให้แสดงคะแนนเฉยๆ โดยไม่บันทึกลงไฟล์
+                showResult(score);
+            }
+        });
+
+        // เมื่อกดปุ่มลูกศร (Next) ที่หน้า Result ให้สุ่มคำใหม่แล้วกลับไปหน้า Home
+        resultPanel.setOnNextClick(() -> {
+            homePanel.restart();
+            showHome();
+        });
+
+        // เมื่อกดปุ่มทำซ้ำ (Repeat) ที่หน้า Result ให้ใช้คำเดิมแล้วกลับไปหน้า Home
+        resultPanel.setOnRepeatClick(() -> {
+            homePanel.repeat();
+            showHome();
+        });
+
+        // -- นำกล่องที่บรรจุทุกหน้าจอ ไปแปะลงบนหน้าต่างหลัก --
+        setContentPane(cards);                                                                                          
+                                    
+        leaderboardPanel.setOnBack(() -> showHome());
+        // -- สั่งให้หน้าจอแรกที่แสดงขึ้นมาตอนเปิดโปรแกรมคือหน้าใด --
+        showLogin();
+    }
+
+
+    // ==============================================
+    // เมธอดสำหรับเปลี่ยนหน้าจอ (Navigation Methods)
+    // การเรียกใช้: cardLayout.show(ตัวกล่องหลัก, "ป้ายชื่อหน้าที่ต้องการโชว์");
+    // ==============================================
+
+    private void switchTo(String name) {
+    currentCard = name;
+    cardLayout.show(cards, name);
+    }
+
+    public boolean isLoggedIn(){
+        return InMemorySession.getInstance().getCurrentUser() != null;
+    }
+
+    /**
+     * สลับหน้าจอไปยังหน้าเข้าสู่ระบบ (Login)
+     */
+    public void showLogin() {
+        switchTo("LOGIN");
+    }
+
+    /**
+     * สลับหน้าจอไปยังหน้าสร้างบัญชีใหม่ (Register)
+     */
+    public void showRegister() {
+        switchTo("REGISTER");
+    }
+
+    /**
+     * สลับหน้าจอไปยังหน้าหลักของแอปพลิเคชัน (Home - สำหรับพิมพ์ดีด)
+     */
+    public void showHome(){
+        if(!isLoggedIn() && "LOGIN".equals(currentCard)) return;
+        switchTo("HOME");
+        homePanel.requestFocusInWindow();
+    }
+
+    /**
+     * สลับหน้าจอไปยังหน้าตารางสรุปคะแนนสูงสุด (Leaderboard)
+     */
+    public void showLeaderboard() {
+        if(!isLoggedIn() && "LOGIN".equals(currentCard)) return;
+        if(pendingLeaderboardScore != null){
+            leaderboardPanel.open(pendingLeaderboardScore.getMode(), pendingLeaderboardScore.getAmount());
+        }else{
+            leaderboardPanel.refresh();
+        }
+        switchTo("LEADERBOARD");
+    }
+    /**
+     * นำคะแนนไปตั้งค่าที่หน้า Result และสลับหน้าจอไปที่นั่น
+     */
+    public void showResult(Score score) {                                                                                                                               
+        resultPanel.setScore(score); 
+        switchTo("RESULT");
+        resultPanel.requestFocusInWindow(); // เพื่อให้รับคีย์บอร์ด ESC/TAB ได้
+    } 
+}
