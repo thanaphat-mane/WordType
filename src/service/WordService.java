@@ -66,11 +66,6 @@ public class WordService {
      * @param count จำนวนคำที่ต้องการสุ่ม เช่น ต้องการ 50 คำ ก็ส่ง 50
      * @return ลิสต์ (List) ของคำศัพท์ที่ถูกสุ่มขึ้นมาตามจำนวนที่สั่ง
      */
-    // List<String> shuffled = new ArrayList<>(WORD_POOL);
-    // Collections.shuffle(shuffled);
-
-    // int n = Math.min(count, shuffled.size());
-    // return new ArrayList<>(shuffled.subList(0, n));
     public List<String> randomWords(int count){
         // สร้างลิสต์ใหม่ (result) เพื่อเก็บคำศัพท์เฉพาะชุดที่จะส่งคืนให้ผู้เรียก
         List<String> result = new ArrayList<>();
