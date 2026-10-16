@@ -51,7 +51,7 @@ public class Register extends JPanel {
         JLabel lblTitle = new JLabel("Sign Up");
         lblTitle.setFont(new Font("Roboto Mono", Font.BOLD, 22)); // ตัวหนา ขนาด 22
         lblTitle.setForeground(Color.BLACK);
-        lblTitle.setBounds(536, 178, 124, 31);
+        lblTitle.setBounds(536, 178, 135, 31);
         lblTitle.setHorizontalAlignment(SwingConstants.CENTER);
         lblTitle.setIcon(UiUtil.loadIcon("Registericon.png"));
         lblTitle.setIconTextGap(13);
@@ -93,7 +93,7 @@ public class Register extends JPanel {
         lblError = new JLabel("");
         lblError.setFont(new Font("Roboto Mono", Font.PLAIN, 12));
         lblError.setForeground(new Color(220,53,69));
-        lblError.setBounds(440, 405, 320, 16);
+        lblError.setBounds(200, 405, 800, 16);
         lblError.setHorizontalAlignment(SwingConstants.CENTER);
         add(lblError);
 
